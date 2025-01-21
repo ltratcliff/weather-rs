@@ -26,13 +26,21 @@ async fn main() -> Result<(), reqwest::Error> {
         let url = format!("{}&lat={}&lon={}&appid={}", URL, city.0, city.1, API_KEY);
         let response = reqwest::Client::new().get(&url).send().await?;
         let data: weather_format::Root = response.json().await?;
-        let sunrise = DateTime::from_timestamp(data.sys.sunrise, 0).unwrap().with_timezone(&New_York);
-        let sunset = DateTime::from_timestamp(data.sys.sunset, 0).unwrap().with_timezone(&New_York);
+        let sunrise = DateTime::from_timestamp(data.sys.sunrise, 0).unwrap()
+            .with_timezone(&New_York);
+        let sunset = DateTime::from_timestamp(data.sys.sunset, 0).unwrap()
+            .with_timezone(&New_York);
+        let mut rain = data.rain.unwrap_or(Default::default()).n1h.unwrap_or(0.0);
+        if rain > 0.0 {
+            rain = rain / 25.4
+        }
 
         // println!("{:?}", data);
-        println!("{:<12}: Temp: {:<5} Feels: {:<5} Min: {:<5}  Max: {:<5} Wind: {:<5?} Rain: {:?} Sunrise: {} Sunset: {}",
+        println!("{:<12}: Temp: {:<5} Feels: {:<5} Min: {:<5}  Max: {:<5} Wind: {:<5?} Rain: {:<5.2}\
+         Sunrise: {} Sunset: {}",
             data.name, data.main.temp, data.main.feels_like, data.main.temp_min, data.main.temp_max,
-            data.wind.unwrap().speed, data.rain, sunrise.format("%I:%M:%S %p %Z"), sunset.format("%I:%M:%S %p %Z"),
+            data.wind.unwrap().speed, rain, sunrise.format("%I:%M:%S %p %Z"),
+                 sunset.format("%I:%M:%S %p %Z"),
         )
     }
 
