@@ -1,7 +1,7 @@
 use reqwest;
 use chrono::{DateTime};
 use chrono_tz::America::New_York;
-mod weather_format;
+mod weather;
 
 const API_KEY: &str = "FILLMEIN";
 const URL: &str = "https://api.openweathermap.org/data/2.5/weather?units=imperial&lang=en&mode=json";
@@ -25,7 +25,7 @@ async fn main() -> Result<(), reqwest::Error> {
     for city in CITIES {
         let url = format!("{}&lat={}&lon={}&appid={}", URL, city.0, city.1, API_KEY);
         let response = reqwest::Client::new().get(&url).send().await?;
-        let data: weather_format::Root = response.json().await?;
+        let data: weather::Root = response.json().await?;
         let sunrise = DateTime::from_timestamp(data.sys.sunrise, 0).unwrap()
             .with_timezone(&New_York);
         let sunset = DateTime::from_timestamp(data.sys.sunset, 0).unwrap()
